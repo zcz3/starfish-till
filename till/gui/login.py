@@ -39,8 +39,10 @@ class Login(Frame):
 		self.button_login.grid(row=2, column=1, **grid_options)
 	
 	def connect_handlers(self):
+		self.input_user.bind('<Return>', self.r_login)
+		self.input_password.bind('<Return>', self.r_login)
 		self.button_login.bind('<ButtonRelease-1>', self.r_login)
-		self.frame_login.bind('<KeyPress-KP_Enter>', self.r_login)
+		self.button_login.bind('<Return>', self.r_login)
 	
 	def r_login(self, args=None):
 		user = unicode(self.input_user.get())
@@ -57,7 +59,9 @@ class Login(Frame):
 			showerror(self.title, 'Incorrect password.')
 			self.input_password.select_range(0, len(self.input_password.get()))
 			return
-		self.response = ('login', user, result.role)
+		self.response = 'login'
+		self.user = user
+		self.role = result.role
 		self.destroy()
 		self.quit()
 		

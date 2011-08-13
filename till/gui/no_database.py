@@ -39,16 +39,13 @@ class DatabasePrompt(Frame):
 	
 	def r_yes(self, args=None):
 		self.response = 'yes'
-		self.destroy()
 		self.quit()
 	
 	def r_config(self, args=None):
 		self.response = 'config'
-		self.destroy()
 		self.quit()
 	
 	def r_exit(self, args=None):
 		self.response = 'exit'
-		self.destroy()
 		self.quit()
 

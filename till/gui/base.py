@@ -4,6 +4,8 @@ The main window. The contents of the window is created by other classses.
 
 from Tkinter import *
 
+from till import config
+
 
 class Base(Frame):
 	
@@ -22,7 +24,7 @@ class Base(Frame):
 		top.columnconfigure(0, weight=1)
 		self.rowconfigure(1, weight=1)
 		self.columnconfigure(0, weight=1)
-		self.label_title = Label(self, text='Starfish Till', font=(24,), background='white')
+		self.label_title = Label(self, text='Starfish Till (%s)' % config.get('tillname'), font=(24,), background='white')
 		self.label_title.grid(row=0, column=0, sticky=E+W)
 		self.frame_main = Frame(self)
 		self.frame_main.grid(row=1, column=0, sticky=N+S+E+W)
