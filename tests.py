@@ -48,5 +48,9 @@ def test5():
 	base.attach_frame(login, None)
 	base.mainloop()
 
-test5()
+def test6():
+	import till.driver
+	driver = till.driver.Driver()
+
+test6()
 

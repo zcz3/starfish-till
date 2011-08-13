@@ -6,15 +6,16 @@ from Tkinter import *
 from tkMessageBox import *
 import md5
 
-from till.db import store
 from till.tables import User
 
 
 class Login(Frame):
 	
-	def __init__(self, master):
+	def __init__(self, master, store):
 		"""'master' must be the frame of the containing window. See the Base class."""
 		Frame.__init__(self, master)
+		self.store = store
+		self.response = 'exit'
 		self.title = 'Login - Starfish Till'
 		self.create_widgets()
 		self.connect_handlers()
@@ -38,16 +39,16 @@ class Login(Frame):
 		self.button_login.grid(row=2, column=1, **grid_options)
 	
 	def connect_handlers(self):
-		self.button_login.bind('<ButtonRelease-1>', self.login)
-		self.frame_login.bind('<KeyPress-KP_Enter>', self.login)
+		self.button_login.bind('<ButtonRelease-1>', self.r_login)
+		self.frame_login.bind('<KeyPress-KP_Enter>', self.r_login)
 	
-	def login(self, args=None):
+	def r_login(self, args=None):
 		user = unicode(self.input_user.get())
 		if not user:
 			return
 		password = self.input_password.get()
 		password_hash = unicode(md5.new(password).hexdigest())
-		result = store.find(User, User.name == user).one()
+		result = self.store.find(User, User.name == user).one()
 		if not result:
 			showerror(self.title, 'User not found.')
 			self.input_user.select_range(0, len(self.input_user.get()))
@@ -55,6 +56,10 @@ class Login(Frame):
 		if password_hash != result.password:
 			showerror(self.title, 'Incorrect password.')
 			self.input_password.select_range(0, len(self.input_password.get()))
+			return
+		self.response = ('login', user, result.role)
+		self.destroy()
+		self.quit()
 		
 			
 

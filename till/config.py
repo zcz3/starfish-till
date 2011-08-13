@@ -18,7 +18,7 @@ defaults = {
 	'dbuser': '',
 	'dbpass': '',
 	'dbhost': '',
-	'dbname': '',
+	'dbname': '~/.tilldb.sqlite',
 	'tillid': '1',
 	'tillname': 'till1',
 }

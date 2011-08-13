@@ -7,11 +7,3 @@ sys.path.append(os.path.join(
 	'lib/'
 ))
 
-from till import config
-
-config.load()
-
-from till import db
-
-db.load()
-
