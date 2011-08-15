@@ -20,7 +20,7 @@ class Product(object):
 	id = Int(primary=True)
 	barcode = Unicode()
 	name = Unicode()
-	price = Decimal()
+	price = Decimal() # Excluding VAT
 	vat_id = Int()
 	vat = Decimal()
 	category_id = Int()

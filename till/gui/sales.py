@@ -7,6 +7,8 @@ from Tkinter import *
 from Tix import *
 from tkMessageBox import *
 
+from till import transaction
+
 
 class Sales(Frame):
 	
@@ -15,6 +17,7 @@ class Sales(Frame):
 		self.master = master
 		self.store = store
 		self.buffer = []
+		self.transaction = transaction.Transaction()
 		self.create_widgets()
 		self.connect_handlers()
 	
@@ -86,6 +89,28 @@ class Sales(Frame):
 	
 	def connect_handlers(self):
 		self.bind_all('<KeyRelease>', self.input)
+		self.bind_all('<Return>', self.input)
+		
+		self.key_enter.bind('<ButtonRelease-1>', lambda e: key.event_generate('<Return>'))
+		keys = (
+			self.key_0,
+			self.key_1,
+			self.key_2,
+			self.key_3,
+			self.key_4,
+			self.key_5,
+			self.key_6,
+			self.key_7,
+			self.key_8,
+			self.key_9,
+			#self.key_multiply,
+			#self.key_minus,
+			#self.key_plus,
+			#self.key_percent,
+		)
+		for key in keys:
+			key.bind('<ButtonRelease-1>', lambda e: key.event_generate('<KeyRelease-%s>' % e.widget['text']))
+		
 	
 	def input(self, event):
 		"""
@@ -101,4 +126,15 @@ class Sales(Frame):
 			self.buffer = []
 		elif event.char.isalpha() or event.char.isdigit():
 			self.buffer.append(event.char)
+	
+	def emit_key(self, event, key):
+		"""Handles key presses from the keypad."""
+		event = Event()
+		event.char = None
+		if key == 'Return':
+			event.keysym = 'Return'
+		else:
+			event.keysym = 'KeyRelease'
+			event.char = key
+		self.input(event)
 
