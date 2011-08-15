@@ -19,8 +19,9 @@ defaults = {
 	'dbpass': '',
 	'dbhost': '',
 	'dbname': '~/.tilldb.sqlite',
-	'tillid': '1',
+	'tillid': 1,
 	'tillname': 'till1',
+	'nextid': 1,
 }
 
 
