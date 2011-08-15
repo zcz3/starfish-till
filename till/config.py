@@ -35,8 +35,8 @@ def load():
 		configpath = os.environ['TILLCONFIG']
 	elif 'HOME' in os.environ.keys():
 		configpath = os.path.join(os.environ['HOME'], 'tillconfig.ini')
-	elif 'UserProfile' in os.environ.keys():
-		configpath = os.path.join(os.environ['UserProfile'], 'tillconfig.ini')
+	elif 'USERPROFILE' in os.environ.keys():
+		configpath = os.path.join(os.environ['USERPROFILE'], 'tillconfig.ini')
 	else:
 		raise ConfigPathNotFound()
 	config = ConfigParser.RawConfigParser(defaults)

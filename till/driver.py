@@ -18,25 +18,28 @@ class Driver:
 		self.master = Tkinter.Tk()
 		self.master.geometry('+10+10')
 		result = db.load()
-		if result == 'connecterror':
+		if result[0] == 'connecterror':
 			self.master.withdraw()
 			response = askyesno('Starfish Till', 'Cannot connect to the database.\nDo you want to open the confiuration editor?', parent=None)
 			self.master.deiconify()
 			if response:
-				self.config_editor()
+				self.config_editor() 
 			sys.exit(0)
-		elif result == 'nodberror':
-			dialog = no_database.DatabasePrompt()
+		elif result[0] == 'nodberror':
+			dialog = no_database.DatabasePrompt(self.master)
 			dialog.mainloop()
 			dialog.destroy()
 			response = dialog.response
 			if response == 'yes':
-				if db.install():
+				result = db.install(result[1], result[2])
+				if result[0] == 'success':
 					self.__init__()
+				else:
+                                        showerror('Starfish Till', 'Could not install the database.\n%s' % result[1])
 			elif response == 'config':
 				self.config_editor()
 			sys.exit(0)
-		self.database, self.store = result
+		self.database, self.store = result[1:]
 		self.base = base.Base(self.master)
 		self.user = None
 		self.role = 0
