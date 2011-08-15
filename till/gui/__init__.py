@@ -1,2 +1,2 @@
 
-__all__ = ('config_editor', 'no_database', 'base', 'login')
+__all__ = ('config_editor', 'no_database', 'base', 'login', 'sales')

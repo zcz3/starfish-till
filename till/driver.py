@@ -62,4 +62,7 @@ class Driver:
 	
 	def sales(self):
 		"""Displays the sales screen."""
+		frame = sales.Sales(self.base.frame_main, self.store)
+		self.base.attach_frame(frame, Tkinter.N+Tkinter.S+Tkinter.E+Tkinter.W)
+		self.base.mainloop()
 
