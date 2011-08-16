@@ -6,8 +6,10 @@ The sales screen.
 from Tkinter import *
 from Tix import *
 from tkMessageBox import *
+from decimal import Decimal as D
 
 from till import transaction
+from till.tables import Product
 
 
 class Sales(Frame):
@@ -18,8 +20,11 @@ class Sales(Frame):
 		self.store = store
 		self.buffer = []
 		self.transaction = transaction.Transaction()
+		self.index = []
 		self.create_widgets()
+		self.label_id.configure(text='ID: '+self.transaction.id)
 		self.connect_handlers()
+		self.listen()
 	
 	def create_widgets(self):
 		self.rowconfigure(0, weight=2)
@@ -86,11 +91,10 @@ class Sales(Frame):
 		self.key_3.grid(row=3, column=2, **keypad_options)
 		self.key_0 = Button(self.frame_keypad, text='0')
 		self.key_0.grid(row=1, column=3, **keypad_options)
+		self.input_buffer = Label(self.frame_keypad, anchor=W, relief=SUNKEN)
+		self.input_buffer.grid(row=4, column=0, columnspan=4, sticky=E+W)
 	
 	def connect_handlers(self):
-		self.bind_all('<KeyRelease>', self.input)
-		self.bind_all('<Return>', self.input)
-		
 		self.key_enter.bind('<ButtonRelease-1>', lambda e: key.event_generate('<Return>'))
 		keys = (
 			self.key_0,
@@ -110,7 +114,23 @@ class Sales(Frame):
 		)
 		for key in keys:
 			key.bind('<ButtonRelease-1>', lambda e: key.event_generate('<KeyRelease-%s>' % e.widget['text']))
-		
+		self.key_minus.bind('<ButtonRelease-1>', lambda e: self.key_minus.event_generate('<KeyRelease-KP_Subtract>'))
+		self.key_plus.bind('<ButtonRelease-1>', lambda e: self.key_plus.event_generate('<KeyRelease-KP_Add>'))
+		self.key_multiply.bind('<ButtonRelease-1>', lambda e: self.key_multiply.event_generate('<KeyRelease-KP_Multiply>'))
+	
+	def listen(self):
+		"""
+		Start listening for keyboard input on all widgets. Must be
+		disabled with 'self.listen_off()' when displaying another
+		window or changing screens.
+		"""
+		self.bind_all('<KeyRelease>', self.input)
+		self.bind_all('<Return>', self.input)
+	
+	def listen_off(self):
+		"""Stop listening for keyboard input."""
+		self.unbind_all('<KeyRelease>')
+		self.unbind_all('<Return>')
 	
 	def input(self, event):
 		"""
@@ -122,10 +142,59 @@ class Sales(Frame):
 		if event.keysym == 'Return':
 			if len(self.buffer) == 0:
 				return
-			pass
-			self.buffer = []
+			string = unicode(''.join(self.buffer))
+			
+			# Search for a product.
+			result = self.store.find(Product, Product.barcode == string).one()
+			if result:
+				p = self.transaction.add(result, 1)
+				self.update_list()
+				self.list_products.selection_set(self.index.index(p))
+			else:
+				self.listen_off()
+				showerror('Starfish Till', 'Product not found.')
+				self.listen()
+			self.clear_buffer()
 		elif event.char.isalpha() or event.char.isdigit():
 			self.buffer.append(event.char)
+			self.input_buffer.configure(text=''.join(self.buffer))
+		elif event.char == '-' or event.char == '+':
+			if event.char == '-' and len(self.buffer) > 0:
+				# Issue a discount.
+				string = ''.join(self.buffer)
+				if not string.isdigit():
+					self.clear_buffer()
+					return
+				amount = D(string) / 100
+				self.transaction.discount += amount
+				self.update_list()
+			else:
+				
+				product = self.get_selected()
+				if product == 'discount':
+					if event.char == '-':
+						# Remove the discount.
+						self.transaction.discount = D(0)
+						self.update_list()
+				elif product:
+					# Change selected product quantity.
+					if event.char == '-':
+						qty = -1
+					else:
+						qty = +1
+					self.transaction.change(product, qty)
+					self.update_list()
+					if product in self.index:
+						self.list_products.selection_set(self.index.index(product))
+			
+			self.clear_buffer()
+		elif event.char == '*':
+			self.buffer.append('*')
+	
+	def clear_buffer(self):
+		"""Clears the input buffer."""
+		self.buffer = []
+		self.input_buffer.configure(text='')
 	
 	def emit_key(self, event, key):
 		"""Handles key presses from the keypad."""
@@ -137,4 +206,34 @@ class Sales(Frame):
 			event.keysym = 'KeyRelease'
 			event.char = key
 		self.input(event)
+	
+	def update_list(self):
+		"""
+		Updates the product list and total according to
+		'self.transactions'.
+		"""
+		self.list_products.delete(0, self.list_products.size())
+		self.index = []
+		for p in self.transaction.products:
+			description = '{0} - {1} @ {2} = {3}'.format(p.name, p.qty, p.price+p.vat, p.total())
+			self.list_products.insert(END, description)
+			self.index.append(p)
+		if self.transaction.discount > 0:
+			self.list_products.insert(END, 'Discount = {0}'.format(self.transaction.discount))
+		self.label_price.configure(text='£'+str(self.transaction.total()))
+	
+	def get_selected(self):
+		"""
+		Returns a 'till.transactions.Product' instance, a string
+		equal to 'discount', or None, according to the selected item
+		in the list.
+		"""
+		selected = self.list_products.curselection()
+		if not selected:
+			return None
+		index = int(selected[0])
+		if self.transaction.discount > 0:
+			if index == self.list_products.size() - 1:
+				return 'discount'
+		return self.index[index]
 

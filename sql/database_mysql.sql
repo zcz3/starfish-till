@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS products (
 	category_id	INT,
 	stock		INT,
 	stock_warning_level	INT,
-	available	BIT(1),
+	available	BOOLEAN,
 	image		BLOB
 );
 
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS sale_items (
 	quantity	INT NOT NULL,
 	total_price	DECIMAL(10,2) NOT NULL,
 	total_vat	DECIMAL(10,2) NOT NULL,
-	is_discount	BIT(1) NOT NULL
+	is_discount	BOOLEAN NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS locations (

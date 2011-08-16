@@ -2,7 +2,7 @@
 Class storing data for a single transaction.
 """
 
-from decimal import Decimal
+from decimal import Decimal as D
 
 from till.tables import *
 from till import config
@@ -17,9 +17,9 @@ class Product:
 		decimal places. 'price' is excluding VAT.
 		"""
 		self.id = id
-		self.name = ''
-		self.price = price
-		self.vat = vat
+		self.name = name
+		self.price = D(price)
+		self.vat = D(vat)
 		self.qty = qty
 		self.barcode = barcode
 	
@@ -42,7 +42,7 @@ class Transaction:
 		self.id = '{0:0>3}-{1:0>6}'.format(config.get('tillid'), config.get('nextid'))
 		config.set('nextid', int(config.get('nextid'))+1)
 		self.products = []
-		self.discount = Decimal('0.00')
+		self.discount = D('0.00')
 	
 	def add(self, product, qty=1):
 		"""
@@ -53,13 +53,31 @@ class Transaction:
 		"""
 		for p in self.products:
 			if p.id == product.id:
-				p.qty -= qty
-				if p.qty <= 0:
-					self.products.remove(p)
-				return
+				self.change(p, qty)
+				return p
 		if qty <= 0:
 			return
-		self.products.append(Product(product.id, product.name, product.price, product.vat, qty, product.barcode))
+		p = Product(product.id, product.name, product.price, product.vat, qty, product.barcode)
+		self.products.append(p)
+		return p
+	
+	def change(self, product, qty=1):
+		"""
+		Allows modification of an existing product. 'product' should
+		be a 'till.transactions.Product' instance already in the
+		transaction. 'qty' is the change in quantity.
+		"""
+		product.qty += qty
+		if product.qty <= 0:
+			self.products.remove(product)
+	
+	def total(self):
+		"""The total, including VAT."""
+		total = D()
+		for p in self.products:
+			total += p.total()
+		return total - self.discount
+		
 	
 	
 
