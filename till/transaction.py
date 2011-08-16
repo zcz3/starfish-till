@@ -71,6 +71,13 @@ class Transaction:
 		if product.qty <= 0:
 			self.products.remove(product)
 	
+	def remove(self, product):
+		"""
+		Remove 'product' from the transaction.
+		"""
+		if product in self.products:
+			self.products.remove(product)
+	
 	def total(self):
 		"""The total, including VAT."""
 		total = D()

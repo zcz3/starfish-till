@@ -92,9 +92,13 @@ class Sales(Frame):
 		self.key_0 = Button(self.frame_keypad, text='0')
 		self.key_0.grid(row=1, column=3, **keypad_options)
 		self.input_buffer = Label(self.frame_keypad, anchor=W, relief=SUNKEN)
-		self.input_buffer.grid(row=4, column=0, columnspan=4, sticky=E+W)
+		self.input_buffer.grid(row=4, column=0, columnspan=3, sticky=E+W)
+		self.button_clear = Button(self.frame_keypad, text='Clr')
+		self.button_clear.grid(row=4, column=3)
 	
 	def connect_handlers(self):
+		self.button_clear.bind('<ButtonRelease-1>', self.clear_buffer)
+		
 		self.key_enter.bind('<ButtonRelease-1>', lambda e: key.event_generate('<Return>'))
 		keys = (
 			self.key_0,
@@ -117,6 +121,7 @@ class Sales(Frame):
 		self.key_minus.bind('<ButtonRelease-1>', lambda e: self.key_minus.event_generate('<KeyRelease-KP_Subtract>'))
 		self.key_plus.bind('<ButtonRelease-1>', lambda e: self.key_plus.event_generate('<KeyRelease-KP_Add>'))
 		self.key_multiply.bind('<ButtonRelease-1>', lambda e: self.key_multiply.event_generate('<KeyRelease-KP_Multiply>'))
+		self.key_percent.bind('<ButtonRelease-1>', lambda e: self.key_percent.event_generate('<percent>'))
 	
 	def listen(self):
 		"""
@@ -143,7 +148,6 @@ class Sales(Frame):
 			if len(self.buffer) == 0:
 				return
 			string = unicode(''.join(self.buffer))
-			
 			# Search for a product.
 			result = self.store.find(Product, Product.barcode == string).one()
 			if result:
@@ -167,6 +171,7 @@ class Sales(Frame):
 					return
 				amount = D(string) / 100
 				self.transaction.discount += amount
+				self.transaction.discount = self.transaction.discount.quantize(D('0.01'))
 				self.update_list()
 			else:
 				
@@ -189,9 +194,37 @@ class Sales(Frame):
 			
 			self.clear_buffer()
 		elif event.char == '*':
-			self.buffer.append('*')
+			# Set absolute quantity.
+			string = ''.join(self.buffer)
+			if string:
+				if string.isdigit():
+					product = self.get_selected()
+					if product != 'discount' and product is not None:
+						product.qty = int(string)
+						if product.qty == 0:
+							self.transaction.remove(product)
+						self.update_list()
+						if product.qty != 0:
+							self.list_products.selection_set(self.index.index(product))
+			self.clear_buffer()
+		elif event.keysym == 'percent':
+			# Issue a percentage discount.
+			string = ''.join(self.buffer)
+			if string:
+				if string.isdigit():
+					perc = int(string)
+					amount = self.transaction.total() * D(perc) / 100
+					self.transaction.discount += amount
+					self.transaction.discount = self.transaction.discount.quantize(D('0.01'))
+					self.update_list()
+			self.clear_buffer()
+		elif event.keysym == 'Escape':
+			self.clear_buffer()
+		elif event.keysym == 'BackSpace':
+			del self.buffer[len(self.buffer)-1]
+			self.input_buffer.configure(text=''.join(self.buffer))
 	
-	def clear_buffer(self):
+	def clear_buffer(self, event=None):
 		"""Clears the input buffer."""
 		self.buffer = []
 		self.input_buffer.configure(text='')
@@ -220,7 +253,7 @@ class Sales(Frame):
 			self.index.append(p)
 		if self.transaction.discount > 0:
 			self.list_products.insert(END, 'Discount = {0}'.format(self.transaction.discount))
-		self.label_price.configure(text='£'+str(self.transaction.total()))
+		self.label_price.configure(text='£{0:.2f}'.format(self.transaction.total()))
 	
 	def get_selected(self):
 		"""
