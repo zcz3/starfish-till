@@ -19,12 +19,21 @@ class Sales(Frame):
 		self.master = master
 		self.store = store
 		self.buffer = []
-		self.transaction = transaction.Transaction()
 		self.index = []
 		self.create_widgets()
-		self.label_id.configure(text='ID: '+self.transaction.id)
+		self.new_transaction()
 		self.connect_handlers()
+	
+	def display(self, user):
+		"""Display the screen."""
+		self.user = user
 		self.listen()
+		self.grid(row=0, column=0, sticky=N+S+E+W)
+	
+	def hide(self):
+		"""Remove the screen."""
+		self.listen_off()
+		self.grid_forget()
 	
 	def create_widgets(self):
 		self.rowconfigure(0, weight=2)
@@ -98,6 +107,8 @@ class Sales(Frame):
 	
 	def connect_handlers(self):
 		self.button_clear.bind('<ButtonRelease-1>', self.clear_buffer)
+		self.button_commit.bind('<ButtonRelease-1>', self.commit)
+		self.button_cancel.bind('<ButtonRelease-1>', self.cancel)
 		
 		self.key_enter.bind('<ButtonRelease-1>', lambda e: key.event_generate('<Return>'))
 		keys = (
@@ -154,6 +165,7 @@ class Sales(Frame):
 				p = self.transaction.add(result, 1)
 				self.update_list()
 				self.list_products.selection_set(self.index.index(p))
+				self.bell()
 			else:
 				self.listen_off()
 				showerror('Starfish Till', 'Product not found.')
@@ -269,4 +281,22 @@ class Sales(Frame):
 			if index == self.list_products.size() - 1:
 				return 'discount'
 		return self.index[index]
+	
+	def commit(self, event=None):
+		"""Save the sale."""
+		if self.transaction.products:
+			self.transaction.commit(self.store, self.user.id)
+			self.new_transaction()
+	
+	def cancel(self, event=None):
+		"""Cancel the sale."""
+		self.transaction.products = []
+		self.discount = D()
+		self.update_list()
+	
+	def new_transaction(self):
+		self.transaction = transaction.Transaction()
+		self.label_price.configure(text='£0.00')
+		self.label_id.configure(text='ID: '+self.transaction.id)
+		self.update_list()
 

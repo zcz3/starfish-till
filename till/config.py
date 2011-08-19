@@ -22,6 +22,7 @@ defaults = {
 	'tillid': 1,
 	'tillname': 'till1',
 	'nextid': 1,
+	'printer': '/dev/ttyUSB0',
 }
 
 

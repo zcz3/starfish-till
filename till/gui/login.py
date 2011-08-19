@@ -15,11 +15,18 @@ class Login(Frame):
 		"""'master' must be the frame of the containing window. See the Base class."""
 		Frame.__init__(self, master)
 		self.store = store
-		self.response = 'exit'
 		self.title = 'Login - Starfish Till'
 		self.create_widgets()
 		self.connect_handlers()
+	
+	def display(self):
+		"""Display the screen."""
 		self.input_user.focus_set()
+		self.grid(row=0, column=0)
+	
+	def hide(self):
+		"""Remove the screen."""
+		self.grid_forget()
 	
 	def create_widgets(self):
 		self.frame_login = LabelFrame(self, text='Login')
@@ -59,11 +66,10 @@ class Login(Frame):
 			showerror(self.title, 'Incorrect password.')
 			self.input_password.select_range(0, len(self.input_password.get()))
 			return
-		self.response = 'login'
-		self.user = user
-		self.role = result.role
-		self.destroy()
-		self.quit()
+		self.user = result
+		self.event_generate('<<role-%d>>' % self.user.role)
+		print '<<role-%d>>' % self.user.role
+		self.event_generate('<<login>>')
 		
 			
 

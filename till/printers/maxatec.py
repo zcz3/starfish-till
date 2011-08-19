@@ -118,7 +118,7 @@ class MaxatecPrinter(PrinterBase):
 	def open_draw(self):
 		self.write(PULSE)
 	
-	def barcode(self, code, ctype, position='l', print_code=True):
+	def barcode(self, code, ctype, position='c', print_code=True):
 		"""
 		Prints a barcode. 'code' is the code to print, and 'ctype' is
 		the type of barcode, which should be one of the following:

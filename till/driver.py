@@ -40,10 +40,7 @@ class Driver:
 				self.config_editor()
 			sys.exit(0)
 		self.database, self.store = result[1:]
-		self.base = base.Base(self.master)
-		self.user = None
-		self.role = 0
-		self.login()
+		self.base = base.Base(self.master, self.store)
 	
 	def config_editor(self):
 		"""Displays the configuration editor."""
@@ -58,14 +55,15 @@ class Driver:
 		if frame.response == 'exit':
 			sys.exit(0)
 		elif frame.response == 'login':
-			self.user = frame.user
-			self.role = frame.role
+			self.user = frame.user.name
+			self.user_id = frame.user.id
+			self.role = frame.user.role
 		frame.destroy()
 		self.sales()
 	
 	def sales(self):
 		"""Displays the sales screen."""
-		frame = sales.Sales(self.base.frame_main, self.store)
+		frame = sales.Sales(self.base.frame_main, self.store, self.user_id)
 		self.base.attach_frame(frame, Tkinter.N+Tkinter.S+Tkinter.E+Tkinter.W)
 		self.base.mainloop()
 
