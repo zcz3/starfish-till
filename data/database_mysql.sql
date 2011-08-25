@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE TABLE IF NOT EXISTS categories (
 	id		INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	name		VARCHAR(11) NOT NULL,
+	name		VARCHAR(50) NOT NULL,
 	image		BLOB
 );
 
@@ -70,3 +70,6 @@ CREATE TABLE IF NOT EXISTS locations (
 -- Populate the database.
 
 INSERT INTO users (name, password, role) VALUES ('admin', MD5(''), 1);
+INSERT INTO categories (name) VALUES ('Uncategorised');
+INSERT INTO vat (name, rate) VALUES ('Zero-rated', 0);
+INSERT INTO vat (name, rate) VALUES ('Standard', 20);

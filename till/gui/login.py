@@ -3,10 +3,11 @@ The first screen to appear. Logs the user into a specific account.
 """
 
 from Tkinter import *
+from ttk import *
 from tkMessageBox import *
 import md5
 
-from till.tables import User
+from till.tables.users import User
 
 
 class Login(Frame):
@@ -16,21 +17,39 @@ class Login(Frame):
 		Frame.__init__(self, master)
 		self.store = store
 		self.title = 'Login - Starfish Till'
+		self.user = None
 		self.create_widgets()
 		self.connect_handlers()
 	
-	def display(self):
-		"""Display the screen."""
+	def run(self):
+		"""
+		Enters the mainloop. Returns True when the user has entered
+		correct credentials, and false when the user has closed the
+		window without logging in.
+		"""
+		self.grid(padx=20, pady=20, sticky=N+S+E+W)
+		top = self.winfo_toplevel()
+		top.rowconfigure(0, weight=1)
+		top.columnconfigure(0, weight=1)
+		
+		width = 340
+		height = 160
+		swidth = self.winfo_screenwidth()
+		sheight = self.winfo_screenheight()
+		dleft = int((swidth - width) / 2)
+		dtop = int((sheight - height) / 2 )
+		top.geometry('%dx%d+%d+%d' % (width, height, dleft, dtop))
+		
 		self.input_user.focus_set()
-		self.grid(row=0, column=0)
-	
-	def hide(self):
-		"""Remove the screen."""
-		self.grid_forget()
+		self.mainloop()
+		if self.user:
+			return True
+		return False
+		
 	
 	def create_widgets(self):
 		self.frame_login = LabelFrame(self, text='Login')
-		self.frame_login.grid(row=0, column=0, ipadx=10, ipady=10)
+		self.frame_login.grid(row=0, column=0, ipadx=10, ipady=10, sticky=N+S+E+W)
 		
 		grid_options = {'padx': 10, 'pady': 2, 'sticky': W}
 		
@@ -67,9 +86,8 @@ class Login(Frame):
 			self.input_password.select_range(0, len(self.input_password.get()))
 			return
 		self.user = result
-		self.event_generate('<<role-%d>>' % self.user.role)
-		print '<<role-%d>>' % self.user.role
-		self.event_generate('<<login>>')
+		self.quit()
+		self.destroy()
 		
 			
 

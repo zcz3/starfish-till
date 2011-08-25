@@ -4,36 +4,39 @@ The sales screen.
 """
 
 from Tkinter import *
-from Tix import *
+#from ttk import *
 from tkMessageBox import *
 from decimal import Decimal as D
 
 from till import transaction
-from till.tables import Product
+from till.tables.products import Product
 
 
 class Sales(Frame):
 	
-	def __init__(self, master, store):
+	def __init__(self, master, store, user):
 		Frame.__init__(self, master)
 		self.master = master
 		self.store = store
+		self.user = user
 		self.buffer = []
 		self.index = []
 		self.create_widgets()
 		self.new_transaction()
 		self.connect_handlers()
 	
-	def display(self, user):
-		"""Display the screen."""
-		self.user = user
+	def run(self):
+		"""Enter the mainloop."""
+		self.grid(padx=20, pady=20, sticky=N+S+E+W)
+		
+		top = self.winfo_toplevel()
+		swidth = self.winfo_screenwidth()
+		sheight = self.winfo_screenheight()
+		top.geometry('%dx%d' % (swidth, sheight))
+		
 		self.listen()
-		self.grid(row=0, column=0, sticky=N+S+E+W)
-	
-	def hide(self):
-		"""Remove the screen."""
-		self.listen_off()
-		self.grid_forget()
+		self.mainloop()
+		return True
 	
 	def create_widgets(self):
 		self.rowconfigure(0, weight=2)

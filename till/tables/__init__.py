@@ -1,8 +1,10 @@
 
-from products import *
-from categories import *
-from vat import *
-from users import *
-from sales import *
-from sale_items import *
+__all__ = ('categories',
+	'locations',
+	'products',
+	'sale_items',
+	'sales',
+	'users',
+	'vat',
+)
 

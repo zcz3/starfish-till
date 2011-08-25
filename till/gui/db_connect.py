@@ -1,9 +1,42 @@
 """
-These dialog boxes are displayed by the 'till.db' module when it cannot connect
-to the database or the database had not been installed.
+These dialog boxes are displayed when there has been an error in connecting to the database.
 """
 
+import sys
 from Tkinter import *
+from ttk import *
+from tkMessageBox import *
+
+from till import db
+from till.gui import config_editor
+
+
+def connect():
+	"""
+	Connect to the database, and if successful return  a (database, store) tuple. Returns False if
+	this function needs to be run again.
+	"""
+	result = db.load()
+	if result[0] == 'connecterror':
+		response = askyesno('Starfish Till', 'Cannot connect to the database.\nDo you want to open the confiuration editor?', parent=None)
+		if response:
+			config_editor.ConfigEditor().mainloop()
+		sys.exit(0)
+	elif result[0] == 'nodberror':
+		dialog = DatabasePrompt()
+		dialog.mainloop()
+		dialog.destroy()
+		response = dialog.response
+		if response == 'yes':
+			result = db.install(result[1], result[2])
+			if result[0] == 'success':
+				return False
+			else:
+                                showerror('Starfish Till', 'Could not install the database.\n%s' % result[1])
+		elif response == 'config':
+			config_editor.ConfigEditor().mainloop()
+		sys.exit(0)
+	return result[1:]
 
 
 class DatabasePrompt(Frame):
